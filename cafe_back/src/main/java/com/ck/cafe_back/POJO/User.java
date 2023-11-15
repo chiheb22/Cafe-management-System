@@ -13,7 +13,10 @@ import java.io.Serializable;
 @Data
 @Table(name = "user_table")
 @NamedQuery(name = "User.findByEmailId",query = "select u from User u Where u.email=:email")
-@NamedQuery(name = "User.getAllUsers",query = "select new com.ck.cafe_back.wrapper.userWrapper() from User u where u.role='user'")
+@NamedQuery(name = "User.getAllUsers",query = "select new com.ck.cafe_back.wrapper.userWrapper(u.id,u.name,u.email,u.contactNumber,u.status) from User u where u.role='user'")
+@NamedQuery(name = "User.updateStatus",query = "update User u set u.status=:status where u.id=:id")
+@NamedQuery(name = "User.getAllAdmin",query = "select u.email from User u where u.role='admin'")
+
 public class User implements Serializable {
     private static final long serialVersionUID = 1L;
 
