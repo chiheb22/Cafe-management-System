@@ -1,10 +1,14 @@
 package com.ck.cafe_back.DAO;
 
 import com.ck.cafe_back.POJO.User;
+import com.ck.cafe_back.wrapper.userWrapper;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Map;
 
 public interface UserDAO extends JpaRepository<User, Integer> {
-    User findByEmail(String email);
+    User findByEmailId(@Param("email") String email);
+    List<userWrapper> getAllUsers();
 }

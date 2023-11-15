@@ -12,6 +12,8 @@ import java.io.Serializable;
 @DynamicUpdate
 @Data
 @Table(name = "user_table")
+@NamedQuery(name = "User.findByEmailId",query = "select u from User u Where u.email=:email")
+@NamedQuery(name = "User.getAllUsers",query = "select new com.ck.cafe_back.wrapper.userWrapper() from User u where u.role='user'")
 public class User implements Serializable {
     private static final long serialVersionUID = 1L;
 
