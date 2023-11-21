@@ -1,7 +1,9 @@
 package com.ck.cafe_back.REST;
 
 import com.ck.cafe_back.wrapper.userWrapper;
+import org.hibernate.collection.spi.MapSemantics;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,5 +24,16 @@ public interface UserRest {
 
     @PostMapping(path = "/update")
     public ResponseEntity<String> update(@RequestBody(required = true) Map<String,String> requestMap);
+
+    @GetMapping(path = "/checkToken")
+    public ResponseEntity<String> checkToken();
+
+    @PostMapping(path = "/changePassword")
+    public ResponseEntity<String> changePassword(@RequestBody Map<String,String> requestMap);
+
+    @PostMapping(path = "/forgotPassword")
+    public ResponseEntity<String> forgotPassword(@RequestBody Map<String,String> requestMap);
+
+
 
 }

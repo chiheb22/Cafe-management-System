@@ -10,7 +10,9 @@ import com.ck.cafe_back.service.UserService;
 import com.ck.cafe_back.utils.CafeUtils;
 import com.ck.cafe_back.utils.EmailUtils;
 import com.ck.cafe_back.wrapper.userWrapper;
+import com.google.common.base.Strings;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +24,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
+
 
 @Slf4j
 @Service
@@ -120,6 +124,53 @@ public class UserServiceImpl implements UserService {
 
     }
 
+    @Override
+    public ResponseEntity<String> checkToken() {
+        return CafeUtils.getResponse("true",HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<String> changePassword(Map<String, String> requestMap) {
+        try {
+            User user = userDAO.findByEmail(authTokenFilter.getCurrentUsername());
+            if (user != null){
+                BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+                if (encoder.matches(user.getPassword(),encoder.encode(requestMap.get("oldPassword")))) {
+                    user.setPassword(encoder.encode(requestMap.get("newPassword")));
+                    userDAO.save(user);
+                    return CafeUtils.getResponse("password changed successfully",HttpStatus.OK);
+
+                }
+                return CafeUtils.getResponse("Incorrect Old Password",HttpStatus.BAD_REQUEST);
+
+            }
+            return CafeUtils.getResponse(CafeConst.SOMETHING_WENT_WRONG,HttpStatus.INTERNAL_SERVER_ERROR);
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+        return CafeUtils.getResponse(CafeConst.SOMETHING_WENT_WRONG,HttpStatus.INTERNAL_SERVER_ERROR);
+
+    }
+
+    @Override
+    public ResponseEntity<String> forgotPassword(Map<String, String> requestMap) {
+        try {
+            User user = userDAO.findByEmail(requestMap.get("email"));
+            if (user != null && !Strings.isNullOrEmpty(user.getEmail())){
+                BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+                String newPassword = generateCommonLangPassword();
+                user.setPassword(encoder.encode(newPassword));
+                userDAO.save(user);
+                emailUtils.forgotMail(user.getEmail(),"Credentials by Cafe Management",newPassword);
+            }
+            return CafeUtils.getResponse("Check your mail for Credentials",HttpStatus.OK);
+        }catch (Exception ex){
+        ex.printStackTrace();
+    }
+        return CafeUtils.getResponse(CafeConst.SOMETHING_WENT_WRONG,HttpStatus.INTERNAL_SERVER_ERROR);
+
+}
+
     private void sendMailToAllAdmins(String status, String user, List<String> allAdmin) {
             allAdmin.remove(authTokenFilter.getCurrentUsername());
             if (status != null && status.equalsIgnoreCase("true")){
@@ -143,5 +194,24 @@ public class UserServiceImpl implements UserService {
         user.setStatus("false");
         user.setRole("user");
         return user;
+    }
+    public String generateCommonLangPassword() {
+        String upperCaseLetters = RandomStringUtils.random(2, 65, 90, true, true);
+        String lowerCaseLetters = RandomStringUtils.random(2, 97, 122, true, true);
+        String numbers = RandomStringUtils.randomNumeric(2);
+        String specialChar = RandomStringUtils.random(2, 33, 47, false, false);
+        String totalChars = RandomStringUtils.randomAlphanumeric(2);
+        String combinedChars = upperCaseLetters.concat(lowerCaseLetters)
+                .concat(numbers)
+                .concat(specialChar)
+                .concat(totalChars);
+        List<Character> pwdChars = combinedChars.chars()
+                .mapToObj(c -> (char) c)
+                .collect(Collectors.toList());
+        Collections.shuffle(pwdChars);
+        String password = pwdChars.stream()
+                .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append)
+                .toString();
+        return password;
     }
 }

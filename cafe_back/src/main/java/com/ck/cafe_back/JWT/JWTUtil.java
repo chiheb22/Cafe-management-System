@@ -16,7 +16,6 @@ import java.util.function.Function;
 @Service
 @Slf4j
 public class JWTUtil {
-    private static final Logger logger = LoggerFactory.getLogger(JWTUtil.class);
 
     private String secret = "secret101";
     public String extractUserName(String token){
